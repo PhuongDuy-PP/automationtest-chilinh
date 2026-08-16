@@ -3,7 +3,8 @@ Feature: Quản lý người dùng hệ thống (Admin account)
   Là một Admin account, tôi muốn lọc danh sách người dùng theo username và role để quản lý tài khoản hệ thống
 
   Background:
-    Given người dùng đã đăng nhập thành công vào hệ thống với tài khoản "Admin"
+    Given người dùng đang ở trang đăng nhập OranageHRM
+    When người dùng đăng nhập với tài khoản "Admin" và mật khẩu "admin123"
     And người dùng mở trang Admin - System Users
 
   Scenario: Lọc người dùng theo username và role

@@ -58,6 +58,7 @@ public class AdminPage extends BasePage{
         WebElement recordCount = wait.until(ExpectedConditions.visibilityOfElementLocated(RECORD_COUNT_TEXT));
         String text = recordCount.getText();
 //        apply regular exxpersion
+//        (1) Record found
         int countRecord = Integer.parseInt(text.replaceAll("\\D+", ""));
 
         int countDataRows = driver.findElements(DATA_ROWS).size();

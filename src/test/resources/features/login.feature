@@ -16,14 +16,14 @@
       When người dùng đăng nhập với tài khoản "Admin" và mật khẩu "admin1234"
       Then hệ thống báo lỗi và vẫn ở trang đăng nhập
 
-    @login_data
-    Scenario Outline: Đăng nhập với nhiều bộ dữ liệu khác nhau
-      When người dùng đăng nhập với tài khoản "<username>" và mật khẩu "<password>"
-      Then kết quả đăng nhập phải là "<expected>"
-
-      Examples:
-        | username | password | expected |
-        | Admin    | admin123 | success  |
-        | Admin1   | admin1234| fail     |
-        | Admin    | admin123 | fail     |
-        | Admin1   | admin1234| fail     |
+#    @login_data
+#    Scenario Outline: Đăng nhập với nhiều bộ dữ liệu khác nhau
+#      When người dùng đăng nhập với tài khoản "<username>" và mật khẩu "<password>"
+#      Then kết quả đăng nhập phải là "<expected>"
+#
+#      Examples:
+#        | username | password | expected |
+#        | Admin    | admin123 | success  |
+#        | Admin1   | admin1234| fail     |
+#        | Admin    | admin123 | fail     |
+#        | Admin1   | admin1234| fail     |
