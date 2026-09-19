@@ -111,4 +111,12 @@ public class LoginStep {
     public void ket_qua_dang_nhap_phai_la(String expectedResult) {
 
     }
+
+    @When("người dùng đăng nhập với tài khoản {string} và mật khẩu {string}")
+    public void nguoi_dung_dang_nhap_voi_tai_khoan_va_mat_khau(String username, String password) {
+        LoginPage loginPage = loginPage();
+        loginPage.enterUsername(username);
+        loginPage.enterPassword(password);
+        loginPage.clickLoginButton();
+    }
 }
