@@ -50,11 +50,24 @@ public class Hooks {
     public void setUp() {
         System.out.println("Before");
         WebDriverManager.chromedriver().setup();
+
+//        GITHUB ACTION tự setup biến môi trường CI=true
+//        chạy trên CI => ko có màn hình chrome
+
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--start-maximized");
-        options.addArguments("--disable-blink-features=AutomationControlled");
-        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
-        options.setExperimentalOption("useAutomationExtension", false);
+
+        boolean isCI = Boolean.parseBoolean(System.getenv("CI"));
+        if (isCI) {
+            options.addArguments("--headless=new"); // chay chrome khong co giao dien
+            options.addArguments("--window-size=1920,1080");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+        } else {
+            options.addArguments("--start-maximized");
+            options.addArguments("--disable-blink-features=AutomationControlled");
+            options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+            options.setExperimentalOption("useAutomationExtension", false);
+        }
 
         WebDriver driver = new ChromeDriver(options);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30)); // FIX: khởi tạo wait cùng lúc với driver
