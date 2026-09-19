@@ -16,6 +16,7 @@ public class LoginPage extends BasePage{
     private static final By LOGIN_BUTTON = By.xpath("//button[@type='submit']");
     private static final By USER_DROPDOWN = By.xpath("//span[@class='oxd-userdropdown-tab']");
     private static final By LOGOUT_LINK = By.xpath("//a[text()='Logout']");
+    private static final By LOGIN_ERROR_MESSAGE = By.xpath("//p[@class='oxd-text oxd-text--p oxd-alert-content-text']");
 
     public LoginPage(WebDriver driver, WebDriverWait wait) {
         super(driver, wait);
@@ -45,6 +46,13 @@ public class LoginPage extends BasePage{
         highlight(loginButton);
         loginButton.click();
 //        unhighlight(loginButton);
+
+        wait.until(
+                ExpectedConditions.or(
+                        ExpectedConditions.visibilityOfElementLocated(USER_DROPDOWN),
+                        ExpectedConditions.visibilityOfElementLocated(LOGIN_ERROR_MESSAGE)
+                )
+        );
     }
 
     public void logout() {

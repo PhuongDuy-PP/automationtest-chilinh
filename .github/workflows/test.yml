@@ -1,0 +1,33 @@
+name: Run automation tests
+
+# khai báo event nào sẽ kích hoạt workflow này
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+#khai báo các job sẽ chạy selenium
+jobs:
+  test:
+    name: Tạo môi trường server
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false # 1 browser fail sẽ ko hùy job của browser khác để thấy kết quả các browser
+      matrix:
+        browser: [chrome, firefox, edge]
+
+    steps:
+#      tải source code của repo về máy ảo để có code mới nhất
+      - name: Checkout source code
+        uses: actions/checkout@v4
+#      cai dat JDK 21
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Run tests
+        run: mvn test

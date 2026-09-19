@@ -58,6 +58,7 @@ public class LoginStep {
     @Then("người dùng được chuyển đến trang Dashboard")
     public void nguoi_dung_da_chuyen_den_trang_dashboard() {
         String currentUrl = hooks.getDriver().getCurrentUrl();
+        System.out.println("currentUrl: " + currentUrl);
         if (!currentUrl.contains("dashboard")) {
             String note = "Mong đợi: đăng nhập thanh cong, chuyen den trang Dashboard"
                     + " | Thực tế: vẫn ở trang " + currentUrl;

@@ -15,12 +15,14 @@ import utils.TestContext;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 public class Hooks {
 //    setup môi trường để chạy test: tạo driver, tearDown
-    private WebDriver driver;
-    private WebDriverWait wait; // FIX: thêm wait, trước đây bị comment bỏ nên LoginPage nhận null
+    private static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<WebDriverWait> waitThreadLocal = new ThreadLocal<>();
 
 //    allure-cucumber7-jvm tự lấy "Feature" làm nhãn report
     private static final String EPIC_TAG_PREFIX = "@epic_";
@@ -50,9 +52,15 @@ public class Hooks {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--start-maximized");
+        options.addArguments("--disable-blink-features=AutomationControlled");
+        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+        options.setExperimentalOption("useAutomationExtension", false);
 
-        driver = new ChromeDriver(options);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // FIX: khởi tạo wait cùng lúc với driver
+        WebDriver driver = new ChromeDriver(options);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30)); // FIX: khởi tạo wait cùng lúc với driver
+
+        driverThreadLocal.set(driver);
+        waitThreadLocal.set(wait);
     }
 
     @After
@@ -60,9 +68,13 @@ public class Hooks {
 //        cập nhật kết quả scenario vừa chạy xong vào file TestResults.xlsx
         updateExcelReport(scenario);
 
+        WebDriver driver = driverThreadLocal.get();
+
         if(driver != null) {
             driver.quit();
         }
+        driverThreadLocal.remove();
+        waitThreadLocal.remove();
     }
 
 //    trích tên file .feature (bỏ phần path và đuôi .feature) từ URI của scenario
@@ -104,11 +116,11 @@ public class Hooks {
 
     // ===== FIX: thêm getter để LoginStep lấy driver/wait qua DI thay vì tự truyền null =====
     public WebDriver getDriver() {
-        return driver;
+        return driverThreadLocal.get();
     }
 
     public WebDriverWait getWait() {
-        return wait;
+        return waitThreadLocal.get();
     }
     // ===== END FIX =====
 }
