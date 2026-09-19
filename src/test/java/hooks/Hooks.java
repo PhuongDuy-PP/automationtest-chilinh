@@ -9,6 +9,8 @@ import io.qameta.allure.Allure;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import utils.ExcelReportUtil;
 import utils.TestContext;
@@ -46,17 +48,14 @@ public class Hooks {
                 .ifPresent(tag-> Allure.epic(tag.substring(EPIC_TAG_PREFIX.length())));
     }
 
-    @Before
-    public void setUp() {
-        System.out.println("Before");
+    private WebDriver createChromeDriver(boolean isCI) {
         WebDriverManager.chromedriver().setup();
-
-//        GITHUB ACTION tự setup biến môi trường CI=true
-//        chạy trên CI => ko có màn hình chrome
-
         ChromeOptions options = new ChromeOptions();
 
-        boolean isCI = Boolean.parseBoolean(System.getenv("CI"));
+        options.addArguments("--disable-blink-features=AutomationControlled");
+        options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
+        options.setExperimentalOption("useAutomationExtension", false);
+
         if (isCI) {
             options.addArguments("--headless=new"); // chay chrome khong co giao dien
             options.addArguments("--window-size=1920,1080");
@@ -64,12 +63,50 @@ public class Hooks {
             options.addArguments("--disable-dev-shm-usage");
         } else {
             options.addArguments("--start-maximized");
-            options.addArguments("--disable-blink-features=AutomationControlled");
-            options.setExperimentalOption("excludeSwitches", Collections.singletonList("enable-automation"));
-            options.setExperimentalOption("useAutomationExtension", false);
         }
 
-        WebDriver driver = new ChromeDriver(options);
+        return new ChromeDriver(options);
+    }
+
+    private WebDriver createFirefoxDriver(boolean isCI) {
+        WebDriverManager.firefoxdriver().setup();
+        FirefoxOptions options = new FirefoxOptions();
+
+        if (isCI) {
+            options.addArguments("--headless");
+            options.addArguments("--width=1920", "--height=1080");
+        }
+
+        FirefoxDriver driver = new FirefoxDriver(options);
+        if (!isCI) {
+            driver.manage().window().maximize();
+        }
+
+        return driver;
+    }
+
+//    factory method
+    private WebDriver createDriver(String browser, boolean isCI) {
+        switch (browser) {
+            case "chrome":
+                return createChromeDriver(isCI);
+            case "firefox":
+                return createFirefoxDriver(isCI);
+            default:
+                throw new IllegalArgumentException("Unsupported browser: " + browser);
+        }
+    }
+
+    @Before
+    public void setUp() {
+        System.out.println("Before");
+        WebDriverManager.chromedriver().setup();
+
+//        GITHUB ACTION tự setup biến môi trường CI=true
+//        chạy trên CI => ko có màn hình chrome
+        boolean isCI = Boolean.parseBoolean(System.getenv("CI"));
+
+        WebDriver driver = createDriver("chrome", isCI);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30)); // FIX: khởi tạo wait cùng lúc với driver
 
         driverThreadLocal.set(driver);

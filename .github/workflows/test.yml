@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false # 1 browser fail sẽ ko hùy job của browser khác để thấy kết quả các browser
       matrix:
-        browser: [chrome]
+        browser: [chrome, firefox]
 
     steps:
 #      tải source code của repo về máy ảo để có code mới nhất
