@@ -32,7 +32,6 @@ jobs:
       - name: Run tests
         run: mvn test
       - name: Send report to Slack
-        uses: 8398a7/action-slack@v3
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
