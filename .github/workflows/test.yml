@@ -30,7 +30,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Run tests
-        run: mvn test
+        run: mvn test -Dbrowser=${{matrix.browser}}
       - name: Send report to Slack
         if: always()
         env:

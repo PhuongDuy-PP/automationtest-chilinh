@@ -97,6 +97,10 @@ public class Hooks {
         }
     }
 
+    private String getBrowser() {
+        return System.getProperty("browser", "chrome");
+    }
+
     @Before
     public void setUp() {
         System.out.println("Before");
@@ -106,7 +110,8 @@ public class Hooks {
 //        chạy trên CI => ko có màn hình chrome
         boolean isCI = Boolean.parseBoolean(System.getenv("CI"));
 
-        WebDriver driver = createDriver("chrome", isCI);
+        String browser = getBrowser();
+        WebDriver driver = createDriver(browser, isCI);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30)); // FIX: khởi tạo wait cùng lúc với driver
 
         driverThreadLocal.set(driver);
