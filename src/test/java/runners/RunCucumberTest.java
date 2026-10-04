@@ -19,7 +19,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value="hooks,stepdefinitions")
 // FIX: đăng ký plugin allure-cucumber7-jvm, nếu không có dòng này thì Cucumber
 // không ghi report ra target/allure-results dù đã có dependency allure trong pom.xml
-@ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm")
+@ConfigurationParameter(key = PLUGIN_PROPERTY_NAME, value = "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm, json:target/cucumber.json")
 public class RunCucumberTest {
 }
 // ===== END FIX =====
