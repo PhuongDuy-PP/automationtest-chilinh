@@ -1,0 +1,1173 @@
+{
+  "name": "Automation test",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "fromEmail": "duyphuong1011996@gmail.com",
+        "toEmail": "15520659@gm.uit.edu.vn",
+        "subject": "=[Duyệt bug] {{ $json.test_case_id }} - {{ $json.test_case_name }}",
+        "message": "=Có test case lỗi cần duyệt:\n\nMã test case: {{ $json.test_case_id }}\nTên: {{ $json.test_case_name }}\nModule: {{ $json.test_suite }}\nMôi trường: {{ $json.environment }}\nBuild: {{ $json.build_version }}\nMức độ: {{ $json.severity }}\n\nCác bước tái hiện:\n{{ $json.steps_to_reproduce }}\n\nKết quả mong đợi: {{ $json.expected_result }}\nKết quả thực tế: {{ $json.actual_result }}\nLỗi: {{ $json.error_message }}\n\nScreenshot: {{ $json.screenshot_url }}\nLog: {{ $json.log_url }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Duyệt tạo ticket",
+            "disapproveLabel": "Từ chối"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeUnit": "days"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        0
+      ],
+      "id": "4e534baf-7b1f-48a6-9243-9524cc819d98",
+      "name": "Send message and wait for response",
+      "webhookId": "ffb34bf8-e7ec-4e90-85d7-f0dfcf1d3bed",
+      "credentials": {
+        "smtp": {
+          "id": "BCREDv6PY4BWbunj",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4d883626-2691-42a1-9e79-e2aee6fa4656",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        0
+      ],
+      "id": "c83391a0-6f94-4ff5-88ff-90c96bf090fc",
+      "name": "Approved?"
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "QA Testing"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10008",
+          "mode": "list",
+          "cachedResultName": "Task"
+        },
+        "summary": "=[Auto] {{ $('Insert Failed Test').item.json.test_case_id }} - {{ $('Insert Failed Test').item.json.test_case_name }}",
+        "additionalFields": {
+          "description": "=*Môi trường:* {{ $('Insert Failed Test').item.json.environment }} *Build:* {{ $('Insert Failed Test').item.json.build_version }}  *Các bước tái hiện:* {{ $('Insert Failed Test').item.json.steps_to_reproduce }}  *Kết quả mong đợi:* {{ $('Insert Failed Test').item.json.expected_result }} *Kết quả thực tế:* {{ $('Insert Failed Test').item.json.actual_result }}  *Lỗi:* {code}{{ $('Insert Failed Test').item.json.error_message }}{code}  Screenshot: {{ $('Insert Failed Test').item.json.screenshot_url }}"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "d18fc106-934b-45b8-baed-b2b9a425f249",
+      "name": "Create Jira Bug",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "IgCYwKgbGzDbJv8K",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "failed_test_cases",
+          "mode": "list",
+          "cachedResultName": "failed_test_cases"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Insert Failed Test').item.json.id }}",
+            "approval_status": "APPROVED",
+            "approved_at": "={{ $now }}",
+            "jira_key": "={{ $('Create Jira Bug').item.json.key }}",
+            "jira_url": "=https://phuong-testing18.atlassian.net/browse/{{ $('Create Jira Bug').item.json.key }}",
+            "updated_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "test_case_id",
+              "displayName": "test_case_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "test_case_name",
+              "displayName": "test_case_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "test_suite",
+              "displayName": "test_suite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "environment",
+              "displayName": "environment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "build_version",
+              "displayName": "build_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "executed_at",
+              "displayName": "executed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "steps_to_reproduce",
+              "displayName": "steps_to_reproduce",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "expected_result",
+              "displayName": "expected_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actual_result",
+              "displayName": "actual_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "stack_trace",
+              "displayName": "stack_trace",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "screenshot_url",
+              "displayName": "screenshot_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "log_url",
+              "displayName": "log_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved_at",
+              "displayName": "approved_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jira_key",
+              "displayName": "jira_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jira_url",
+              "displayName": "jira_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1472,
+        -96
+      ],
+      "id": "4afde431-a523-4242-9e85-a1cb6ca6fccb",
+      "name": "Update Approved",
+      "credentials": {
+        "postgres": {
+          "id": "LdTiEWflG9rPWoP2",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C597M6SDN",
+          "mode": "list",
+          "cachedResultName": "new-channel"
+        },
+        "text": "=🐞 Đã tạo bug từ test case *{{ $('Insert Failed Test').item.json.test_case_id }}* Ticket: <{{ $json.jira_url }}|{{ $json.jira_key }}>",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1696,
+        -96
+      ],
+      "id": "d2cb6093-6feb-4b73-b4cc-404f14200f85",
+      "name": "Send a message1",
+      "webhookId": "241a792f-b9d9-48d8-b7eb-2c020e13f506",
+      "credentials": {
+        "slackApi": {
+          "id": "ZnVqJsWNMIClQ0eQ",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "failed_test_cases",
+          "mode": "list",
+          "cachedResultName": "failed_test_cases"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Insert Failed Test').item.json.id }}",
+            "approval_status": "REJECTED",
+            "approved_at": "={{ $now }}",
+            "updated_at": "={{ $now }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "test_case_id",
+              "displayName": "test_case_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "test_case_name",
+              "displayName": "test_case_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "test_suite",
+              "displayName": "test_suite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "environment",
+              "displayName": "environment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "build_version",
+              "displayName": "build_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "executed_at",
+              "displayName": "executed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "steps_to_reproduce",
+              "displayName": "steps_to_reproduce",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "expected_result",
+              "displayName": "expected_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "actual_result",
+              "displayName": "actual_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "stack_trace",
+              "displayName": "stack_trace",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "screenshot_url",
+              "displayName": "screenshot_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "log_url",
+              "displayName": "log_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved_at",
+              "displayName": "approved_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jira_key",
+              "displayName": "jira_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jira_url",
+              "displayName": "jira_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        1248,
+        96
+      ],
+      "id": "eff98706-9742-450a-ace0-4f49513b7994",
+      "name": "Update Rejected",
+      "credentials": {
+        "postgres": {
+          "id": "LdTiEWflG9rPWoP2",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "failed_test_cases",
+          "mode": "list",
+          "cachedResultName": "failed_test_cases"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "test_case_id",
+              "displayName": "test_case_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "test_case_name",
+              "displayName": "test_case_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "test_suite",
+              "displayName": "test_suite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "environment",
+              "displayName": "environment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "build_version",
+              "displayName": "build_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "executed_at",
+              "displayName": "executed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "steps_to_reproduce",
+              "displayName": "steps_to_reproduce",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "expected_result",
+              "displayName": "expected_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "actual_result",
+              "displayName": "actual_result",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stack_trace",
+              "displayName": "stack_trace",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screenshot_url",
+              "displayName": "screenshot_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "log_url",
+              "displayName": "log_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approval_status",
+              "displayName": "approval_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved_at",
+              "displayName": "approved_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jira_key",
+              "displayName": "jira_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jira_url",
+              "displayName": "jira_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        576,
+        0
+      ],
+      "id": "a5f44a3f-b8e4-4100-933e-eaede8c5fc00",
+      "name": "Insert Failed Test",
+      "credentials": {
+        "postgres": {
+          "id": "LdTiEWflG9rPWoP2",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Chọn browser và phạm vi test",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Browser",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "chrome"
+                  },
+                  {
+                    "option": "firefox"
+                  },
+                  {
+                    "option": "all"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Phạm vi",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "login_success"
+                  },
+                  {
+                    "option": "login_fail"
+                  },
+                  {
+                    "option": "login_data"
+                  },
+                  {
+                    "option": "admin_filter"
+                  },
+                  {
+                    "option": "personal_upload"
+                  },
+                  {
+                    "option": "Tất cả test case"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Tag tự nhập",
+              "placeholder": "VD: @login and not @login_data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -544,
+        0
+      ],
+      "id": "ad28161c-45a3-495c-adcd-0816dca8e10a",
+      "name": "Chạy automation test",
+      "webhookId": "43cdf881-765f-4869-b5a6-90439fd1f39d"
+    },
+    {
+      "parameters": {
+        "jsCode": "const f = $input.first().json;\nconst s = f['Phạm vi'];\nlet tags = '';\nif (s.startsWith('Cả feature: ')) tags = '@' + s.replace('Cả feature: ', '');\nelse if (s === 'Tự nhập tag') tags = (f['Tag tự nhập'] || '').trim();\nelse if (s !== 'Tất cả test case') tags = '@' + s;\nreturn [{ json: { browser: f['Browser'], tags } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "4b55ea81-cc62-4824-8137-ac6b6bb5f0eb",
+      "name": "Build args"
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "=export PATH=/opt/homebrew/bin:$PATH; export CI=true; rm -f target/cucumber.json; mvn -B test -Dbrowser={{ $json.browser }} {{ $json.tags ? '-Dcucumber.filter.tags=\"' + $json.tags + '\"' : '' }} || true",
+        "cwd": "/Users/macc/Documents/automationtest/automationtest-chilinh-version-02-10"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        0
+      ],
+      "id": "5d8ef826-13cd-4355-a664-61c2309ff65d",
+      "name": "Run tests (SSH)",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "jX0FX67zokUNeV6f",
+          "name": "SSH Private Key account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "privateKey",
+        "command": "cat target/cucumber.json",
+        "cwd": "/Users/macc/Documents/automationtest/automationtest-chilinh-version-02-10"
+      },
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [
+        128,
+        0
+      ],
+      "id": "7eadcb69-5e59-4b12-8442-d1bc17394599",
+      "name": "Read cucumber.json",
+      "credentials": {
+        "sshPrivateKey": {
+          "id": "jX0FX67zokUNeV6f",
+          "name": "SSH Private Key account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Đọc target/cucumber.json (Cucumber tự sinh) -> mỗi scenario FAIL = 1 item khớp cột bảng failed_test_cases\nconst features = JSON.parse($input.first().json.stdout);\nconst browser = $('Build args').first().json.browser;\nconst out = [];\n\nfor (const feature of features) {\n  const featureTags = (feature.tags || []).map(t => t.name);\n  let background = null; // Cucumber xuất Background thành 1 element riêng ngay trước scenario\n\n  for (const el of feature.elements || []) {\n    if (el.type === 'background') { background = el; continue; }\n\n    const steps = [...(background ? background.steps : []), ...el.steps];\n    const hooks = [...(el.before || []), ...(el.after || [])];\n    const failedStep = steps.find(s => s.result.status !== 'passed')\n      || hooks.find(h => h.result.status === 'failed');\n    if (!failedStep) continue; // scenario pass -> bỏ qua\n\n    const tags = (el.tags || []).map(t => t.name)\n      .filter(t => !featureTags.includes(t) && !t.startsWith('@epic_') && !t.startsWith('@SEVERITY='));\n    const sev = (el.tags || []).map(t => t.name).find(t => t.startsWith('@SEVERITY='));\n    const err = failedStep.result.error_message || ('Status: ' + failedStep.result.status);\n\n    out.push({ json: {\n      test_case_id: tags.length ? tags[0].slice(1) : el.name,\n      test_case_name: el.name,\n      test_suite: feature.name,\n      environment: 'local-' + browser,\n      build_version: 'local-' + new Date().toISOString().slice(0, 16),\n      severity: sev ? sev.split('=')[1] : 'Medium',\n      steps_to_reproduce: steps.map((s, i) => `${i + 1}. ${s.keyword}${s.name}`).join('\\n'),\n      expected_result: `Step \"${failedStep.keyword || ''}${failedStep.name || ''}\" phải PASSED`,\n      actual_result: `Step ${failedStep.result.status}: ${err.split('\\n')[0]}`,\n      error_message: err.split('\\n')[0],\n      stack_trace: err,\n    }});\n  }\n}\nreturn out; // không có scenario fail -> [] -> workflow dừng"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        0
+      ],
+      "id": "736aa980-7b73-463d-8305-58bc504f1761",
+      "name": "Extract failed tests"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Create Jira Bug",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jira Bug": {
+      "main": [
+        [
+          {
+            "node": "Update Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Approved": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Failed Test": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chạy automation test": {
+      "main": [
+        [
+          {
+            "node": "Build args",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build args": {
+      "main": [
+        [
+          {
+            "node": "Run tests (SSH)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run tests (SSH)": {
+      "main": [
+        [
+          {
+            "node": "Read cucumber.json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read cucumber.json": {
+      "main": [
+        [
+          {
+            "node": "Extract failed tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract failed tests": {
+      "main": [
+        [
+          {
+            "node": "Insert Failed Test",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "69d2bc6a-bc71-46f5-937a-dad9d508a10d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "151261e55b31dfe98a4b9090b0dbd4b74e6aa58532faaedacf10be8672f42f74"
+  },
+  "nodeGroups": [],
+  "id": "lQP6PgUFAYGakcBA",
+  "tags": []
+}

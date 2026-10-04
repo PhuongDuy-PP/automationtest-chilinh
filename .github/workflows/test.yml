@@ -31,12 +31,32 @@ jobs:
           cache: 'maven'
       - name: Run tests
         run: mvn test -Dbrowser=${{matrix.browser}}
-      - name: Send report to Slack
+      - name: Tổng hợp kết quả test
         if: always()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          TEXT=$(printf 'Test send report ${{matrix.browser}}')
-          curl -sS -X POST -H 'Content-Type: application/json' \
-          -d "{\"text\": \"$TEXT\"}" \
-          "$SLACK_WEBHOOK_URL"
+          # lấy tất cả scenario trong target/cucumber.json (Cucumber tự sinh sau khi chạy test)
+          SCENARIOS='[.[].elements[] | select(.type == "scenario")]'
+          # tổng số scenario
+          TOTAL=$(jq "$SCENARIOS | length" target/cucumber.json)
+          # scenario fail = có ít nhất 1 step không ở trạng thái passed
+          FAILED=$(jq "$SCENARIOS | map(select(any(.steps[]; .result.status != \"passed\"))) | length" target/cucumber.json)
+          # số scenario pass = tổng - fail
+          PASSED=$((TOTAL - FAILED))
+          # file excel mới nhất vừa được tạo trong lần chạy này (ls -t: mới nhất đứng đầu)
+          EXCEL_FILE=$(ls -t src/test/resources/data/TestResults*.xlsx | head -n 1)
+          # ghi vào GITHUB_ENV để các bước sau dùng được ($TOTAL, $PASSED, ...)
+          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+          echo "PASSED=$PASSED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+          echo "EXCEL_FILE=$EXCEL_FILE" >> $GITHUB_ENV
+      - name: Gửi báo cáo + file excel lên Slack
+        if: always()
+        uses: slackapi/slack-github-action@v2
+        with:
+          method: files.uploadV2 # API upload file của Slack
+          token: ${{ secrets.SLACK_BOT_TOKEN }} # token của Slack bot (xoxb-...)
+          payload: |
+            channel_id: ${{ secrets.SLACK_CHANNEL_ID }}
+            initial_comment: "Kết quả test trên ${{ matrix.browser }}: tổng ${{ env.TOTAL }} | pass ${{ env.PASSED }} | fail ${{ env.FAILED }}"
+            file: ${{ env.EXCEL_FILE }}
+            filename: TestResults-${{ matrix.browser }}.xlsx

@@ -16,6 +16,7 @@ public class ExcelReportUtil {
     private static final String HEADER_TEST_CASE = "Test Case";
     private static final String HEADER_STATUS = "trạng thái";
     private static final String HEADER_NOTE = "Ghi chú";
+    private static final String HEADER_BROWSER = "Browser";
 
     private static XSSFWorkbook createNewWorkbook() {
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -28,6 +29,7 @@ public class ExcelReportUtil {
         header.createCell(2).setCellValue(HEADER_TEST_CASE);
         header.createCell(3).setCellValue(HEADER_STATUS);
         header.createCell(4).setCellValue(HEADER_NOTE);
+        header.createCell(5).setCellValue(HEADER_BROWSER);
 
         return workbook;
     }
