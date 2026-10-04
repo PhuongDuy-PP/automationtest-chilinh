@@ -9,9 +9,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ExcelReportUtil {
-    private static final String EXCEL_PATH = "src/test/resources/data/TestResults.xlsx";
+    private static final String EXCEL_PATH = "src/test/resources/data/TestResults_"
+            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".xlsx";
     private static final String HEADER_FEATURE = "Feature";
     private static final String HEADER_TEST_CASE = "Test Case";
     private static final String HEADER_STATUS = "trạng thái";
@@ -79,6 +82,14 @@ public class ExcelReportUtil {
         return null;
     }
 
+    private static String getBrowserName() {
+        String browser = System.getProperty("browser");
+        if (browser == null || browser.isBlank()) {
+            return "chrome";
+        }
+        return browser.trim().toLowerCase();
+    }
+
 //    hàm update status test case trong file excel
 //    dùng cơ chế synchornized: đưa các kết qua test case vào hàng đợi
 //    cái nào xong trước thì đọc file để cập nhật status trước
@@ -115,27 +126,21 @@ public class ExcelReportUtil {
                     return;
                 }
 
-//                tìm trong toàn bộ dữ liệu xem có dòng nào cot Test case trùng khớp CHÍNH XÁC với tên scenario đang chạy hay không
-                Row targetRow = findRowByTestCase(sheet, testCaseCol, testCaseName);
+//                update: them column browser
+                int browserCol = findColumnIndex(headerRow, HEADER_BROWSER);
 
-//                TH1: NẾU KHÔNG KHOP => TAO ROW MOI => THEM THONG TIN, STATUS VAO FILE EXCEL
-                if (targetRow == null) {
-                    int newRowIndex = sheet.getLastRowNum() + 1;
-                    targetRow = sheet.createRow(newRowIndex);
-                    setCellValue(targetRow, 0, String.valueOf(newRowIndex));
-                    setCellValue(targetRow, testCaseCol, testCaseName);
-                    setCellValue(targetRow, featureCol, featureName);
-                }
-
-
-//                TH2: NEU KHOOP => UPDATE VALUE CUA COT TRANG THAI
+                int newRowIndex = sheet.getLastRowNum() + 1;
+                Row targetRow = sheet.createRow(newRowIndex);
+                setCellValue(targetRow, 0, String.valueOf(newRowIndex));
+                setCellValue(targetRow, testCaseCol, testCaseName);
+                setCellValue(targetRow, featureCol, featureName);
+                setCellValue(targetRow, browserCol, getBrowserName());
                 setCellValue(targetRow, statusCol, status);
 
-//                test case fail => luu noi dung vao col ghi chu
+//                test case fail => luu noi dung vao cot ghi chu
                 boolean isPassed = status != null && status.equalsIgnoreCase("PASSED");
                 setCellValue(targetRow, noteCol, isPassed ? "" : note);
 
-//                ghi de lai toan bo workbook xuong file excel
                 try (FileOutputStream output = new FileOutputStream(file)) {
                     workbook.write(output);
                 }
